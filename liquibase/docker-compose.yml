@@ -1,0 +1,23 @@
+version: '3.4'
+services:
+  liquibase:
+    image: liquibase/liquibase
+    command: --url=jdbc:postgresql://postgres:5432/database --changeLogFile=changelog.json --username=username --password=secret update
+    volumes:
+      - .:/liquibase/changelog
+    depends_on:
+      postgres:
+        condition: service_healthy
+  postgres:
+    image: 'postgres:latest'
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=database
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-U", "postgres"]
+      interval: 5s
+      timeout: 1s
+      retries: 2
