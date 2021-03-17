@@ -1,0 +1,23 @@
+version: '3'
+services:
+  flyway:
+    image: flyway/flyway
+    command: -url=jdbc:postgresql://postgres:5432/database -schemas=public -user=username -password=secret -connectRetries=60 migrate
+    volumes:
+      - .:/flyway/sql
+    depends_on:
+      postgres:
+        condition: service_healthy
+  postgres:
+    image: 'postgres:latest'
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=database
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-U", "postgres"]
+      interval: 5s
+      timeout: 1s
+      retries: 2
